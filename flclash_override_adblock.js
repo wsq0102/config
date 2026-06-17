@@ -1,0 +1,294 @@
+function main(config) {
+  const excludedNodeNamePattern = /剩余|流量|套餐|到期|更新|订阅|群组|重置|官网/;
+  const filteredProxies = Array.isArray(config.proxies)
+    ? config.proxies.filter(
+        (proxy) =>
+          proxy &&
+          typeof proxy.name === "string" &&
+          !excludedNodeNamePattern.test(proxy.name),
+      )
+    : [];
+  const allNodes = filteredProxies.length
+    ? filteredProxies
+        .map((proxy) => proxy.name)
+        .filter((name) => name && !["DIRECT", "REJECT", "直连", "拒绝"].includes(name))
+    : [];
+  const autoNodePattern = /新加坡|狮城|坡|sg|singapore|日本|东京|大阪|jp|japan/i;
+  const autoNodeChoices = allNodes.filter((name) => autoNodePattern.test(name));
+
+  const dedupe = (items) => [...new Set(items.filter(Boolean))];
+  const allNodeChoices = allNodes.length > 0 ? allNodes : ["直连"];
+  const aiExcludedNodePattern = /香港|hk|hong kong/i;
+  const aiNodeChoices = allNodes.filter((name) => !aiExcludedNodePattern.test(name));
+  const lowMultiplierNodePattern = /(?:^|[^0-9])0\.\d+(?:x|倍)?(?:$|[^0-9])/i;
+  const lowMultiplierNodeChoices = allNodes.filter((name) => lowMultiplierNodePattern.test(name));
+  const lowMultiplierChoices = lowMultiplierNodeChoices.length > 0 ? lowMultiplierNodeChoices : allNodeChoices;
+  const baseProxyChoices = ["直连", "拒绝", ...allNodeChoices];
+  const manualChoices = dedupe(["自动", "低倍", ...baseProxyChoices]);
+  const proxyFirstChoices = dedupe(["手动", "自动", "低倍", ...baseProxyChoices]);
+  const aiProxyChoices = dedupe([
+    "手动",
+    "自动",
+    "低倍",
+    ...baseProxyChoices.slice(0, 2),
+    ...(aiNodeChoices.length > 0 ? aiNodeChoices : allNodeChoices),
+  ]);
+  const directFirstChoices = dedupe(["直连", "自动", "低倍", ...baseProxyChoices]);
+  const rejectFirstChoices = dedupe(["拒绝", "直连", "自动", "低倍", ...baseProxyChoices]);
+
+  config.proxies = [
+    ...filteredProxies.filter((proxy) => !["直连", "拒绝"].includes(proxy.name)),
+    { name: "直连", type: "direct" },
+    { name: "拒绝", type: "reject" },
+  ];
+
+  config["proxy-groups"] = [
+    {
+      name: "自动",
+      type: "url-test",
+      url: "http://www.gstatic.com/generate_204",
+      interval: 300,
+      tolerance: 50,
+      proxies: autoNodeChoices.length > 0 ? autoNodeChoices : allNodeChoices,
+    },
+    {
+      name: "低倍",
+      type: "url-test",
+      url: "http://www.gstatic.com/generate_204",
+      interval: 300,
+      tolerance: 50,
+      proxies: lowMultiplierChoices,
+    },
+    {
+      name: "手动",
+      type: "select",
+      proxies: manualChoices,
+    },
+    {
+      name: "广告",
+      type: "select",
+      proxies: rejectFirstChoices,
+    },
+    {
+      name: "AI",
+      type: "select",
+      proxies: aiProxyChoices,
+    },
+    {
+      name: "流媒",
+      type: "select",
+      proxies: proxyFirstChoices,
+    },
+    {
+      name: "谷歌",
+      type: "select",
+      proxies: proxyFirstChoices,
+    },
+    {
+      name: "TG",
+      type: "select",
+      proxies: proxyFirstChoices,
+    },
+    {
+      name: "微软",
+      type: "select",
+      proxies: directFirstChoices,
+    },
+    {
+      name: "国内",
+      type: "select",
+      proxies: directFirstChoices,
+    },
+    {
+      name: "海外",
+      type: "select",
+      proxies: proxyFirstChoices,
+    },
+    {
+      name: "兜底",
+      type: "select",
+      proxies: directFirstChoices,
+    },
+  ];
+
+  config["rule-providers"] = {
+    ...(config["rule-providers"] || {}),
+    antiAd: {
+      type: "http",
+      behavior: "domain",
+      url: "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
+      path: "./ruleset/anti-ad-clash.yaml",
+      interval: 86400,
+    },
+  };
+
+  config.rules = [
+    "RULE-SET,antiAd,广告",
+    "GEOSITE,category-ads-all,广告",
+    "DOMAIN-SUFFIX,doubleclick.net,广告",
+    "DOMAIN-SUFFIX,googleadservices.com,广告",
+    "DOMAIN-SUFFIX,googlesyndication.com,广告",
+    "DOMAIN-SUFFIX,google-analytics.com,广告",
+    "DOMAIN-SUFFIX,adservice.google.com,广告",
+    "DOMAIN-SUFFIX,ads-twitter.com,广告",
+    "DOMAIN-SUFFIX,facebook.net,广告",
+    "DOMAIN-SUFFIX,scorecardresearch.com,广告",
+    "DOMAIN-SUFFIX,zedo.com,广告",
+    "DOMAIN-SUFFIX,adsrvr.org,广告",
+    "DOMAIN-SUFFIX,taboola.com,广告",
+    "DOMAIN-SUFFIX,outbrain.com,广告",
+    "DOMAIN-SUFFIX,criteo.com,广告",
+    "DOMAIN-SUFFIX,adnxs.com,广告",
+    "DOMAIN-SUFFIX,adsystem.com,广告",
+    "DOMAIN-SUFFIX,umeng.com,广告",
+    "DOMAIN-SUFFIX,umengcloud.com,广告",
+    "DOMAIN-KEYWORD,adservice,广告",
+    "DOMAIN-KEYWORD,adsystem,广告",
+
+    "DOMAIN-SUFFIX,openai.com,AI",
+    "DOMAIN-SUFFIX,chatgpt.com,AI",
+    "DOMAIN-SUFFIX,oaistatic.com,AI",
+    "DOMAIN-SUFFIX,oaiusercontent.com,AI",
+    "DOMAIN-SUFFIX,auth0.com,AI",
+    "DOMAIN-SUFFIX,ai.com,AI",
+    "DOMAIN-SUFFIX,anthropic.com,AI",
+    "DOMAIN-SUFFIX,claude.ai,AI",
+    "DOMAIN-SUFFIX,perplexity.ai,AI",
+    "DOMAIN-SUFFIX,poe.com,AI",
+    "DOMAIN-SUFFIX,gemini.google.com,AI",
+    "DOMAIN-SUFFIX,bard.google.com,AI",
+    "DOMAIN-KEYWORD,openai,AI",
+    "DOMAIN-KEYWORD,chatgpt,AI",
+    "DOMAIN-KEYWORD,claude,AI",
+    "DOMAIN-KEYWORD,perplexity,AI",
+
+    "DOMAIN-SUFFIX,netflix.com,流媒",
+    "DOMAIN-SUFFIX,nflxvideo.net,流媒",
+    "DOMAIN-SUFFIX,nflximg.net,流媒",
+    "DOMAIN-SUFFIX,nflxso.net,流媒",
+    "DOMAIN-SUFFIX,nflxext.com,流媒",
+    "DOMAIN-SUFFIX,fast.com,流媒",
+    "DOMAIN-SUFFIX,disneyplus.com,流媒",
+    "DOMAIN-SUFFIX,disney-plus.net,流媒",
+    "DOMAIN-SUFFIX,dssott.com,流媒",
+    "DOMAIN-SUFFIX,bamgrid.com,流媒",
+    "DOMAIN-SUFFIX,hotstar.com,流媒",
+    "DOMAIN-SUFFIX,hotstarext.com,流媒",
+    "DOMAIN-SUFFIX,hulu.com,流媒",
+    "DOMAIN-SUFFIX,hbomax.com,流媒",
+    "DOMAIN-SUFFIX,hbo.com,流媒",
+    "DOMAIN-SUFFIX,max.com,流媒",
+    "DOMAIN-SUFFIX,primevideo.com,流媒",
+    "DOMAIN-SUFFIX,amazonvideo.com,流媒",
+    "DOMAIN-SUFFIX,media-amazon.com,流媒",
+    "DOMAIN-SUFFIX,music.amazon.com,流媒",
+    "DOMAIN-SUFFIX,peacocktv.com,流媒",
+    "DOMAIN-SUFFIX,paramountplus.com,流媒",
+    "DOMAIN-SUFFIX,pplusstatic.com,流媒",
+    "DOMAIN-SUFFIX,pluto.tv,流媒",
+    "DOMAIN-SUFFIX,discoveryplus.com,流媒",
+    "DOMAIN-SUFFIX,dplus-ph-ww.com,流媒",
+    "DOMAIN-SUFFIX,dazn.com,流媒",
+    "DOMAIN-SUFFIX,dazn-api.com,流媒",
+    "DOMAIN-SUFFIX,mubi.com,流媒",
+    "DOMAIN-SUFFIX,crave.ca,流媒",
+    "DOMAIN-SUFFIX,tver.jp,流媒",
+    "DOMAIN-SUFFIX,bbciplayer.com,流媒",
+    "DOMAIN-KEYWORD,iplayer,流媒",
+    "DOMAIN-SUFFIX,spotify.com,流媒",
+    "DOMAIN-SUFFIX,scdn.co,流媒",
+    "DOMAIN-SUFFIX,spotifycdn.com,流媒",
+    "DOMAIN-SUFFIX,tidal.com,流媒",
+    "DOMAIN-SUFFIX,soundcloud.com,流媒",
+    "DOMAIN-SUFFIX,sndcdn.com,流媒",
+    "DOMAIN-SUFFIX,deezer.com,流媒",
+    "DOMAIN-SUFFIX,dzcdn.net,流媒",
+    "DOMAIN-SUFFIX,pandora.com,流媒",
+    "DOMAIN-SUFFIX,music.apple.com,流媒",
+    "DOMAIN-SUFFIX,applemusic.com,流媒",
+    "DOMAIN-SUFFIX,tubi.tv,流媒",
+    "DOMAIN-SUFFIX,plex.tv,流媒",
+    "DOMAIN-SUFFIX,viki.com,流媒",
+    "DOMAIN-SUFFIX,viu.com,流媒",
+    "DOMAIN-SUFFIX,crunchyroll.com,流媒",
+    "DOMAIN-SUFFIX,abema.tv,流媒",
+    "DOMAIN-SUFFIX,twitch.tv,流媒",
+    "DOMAIN-SUFFIX,ttvnw.net,流媒",
+    "DOMAIN-SUFFIX,nicochannel.jp,流媒",
+    "DOMAIN-SUFFIX,nicovideo.jp,流媒",
+    "DOMAIN-SUFFIX,tv.apple.com,流媒",
+    "DOMAIN-SUFFIX,youtube.com,流媒",
+    "DOMAIN-SUFFIX,googlevideo.com,流媒",
+    "DOMAIN-SUFFIX,ytimg.com,流媒",
+    "DOMAIN-SUFFIX,youtu.be,流媒",
+    "DOMAIN-KEYWORD,youtube,流媒",
+    "DOMAIN-KEYWORD,netflix,流媒",
+    "DOMAIN-KEYWORD,disney,流媒",
+    "DOMAIN-KEYWORD,hulu,流媒",
+    "DOMAIN-KEYWORD,primevideo,流媒",
+    "DOMAIN-KEYWORD,peacock,流媒",
+    "DOMAIN-KEYWORD,paramount,流媒",
+    "DOMAIN-KEYWORD,spotify,流媒",
+    "DOMAIN-KEYWORD,crunchyroll,流媒",
+    "DOMAIN-KEYWORD,netflixcdn,流媒",
+    "DOMAIN-KEYWORD,discoveryplus,流媒",
+    "DOMAIN-KEYWORD,dazn,流媒",
+    "DOMAIN-KEYWORD,deezer,流媒",
+    "DOMAIN-KEYWORD,pandora,流媒",
+    "DOMAIN-KEYWORD,soundcloud,流媒",
+    "DOMAIN-KEYWORD,applemusic,流媒",
+    "DOMAIN-KEYWORD,twitch,流媒",
+
+    "DOMAIN-SUFFIX,google.com,谷歌",
+    "DOMAIN-SUFFIX,googleapis.com,谷歌",
+    "DOMAIN-SUFFIX,gstatic.com,谷歌",
+    "DOMAIN-SUFFIX,googleusercontent.com,谷歌",
+    "DOMAIN-SUFFIX,ggpht.com,谷歌",
+    "DOMAIN-SUFFIX,googlevideo.com,谷歌",
+    "DOMAIN-SUFFIX,youtube.com,谷歌",
+    "DOMAIN-SUFFIX,ytimg.com,谷歌",
+    "DOMAIN-SUFFIX,youtu.be,谷歌",
+    "DOMAIN-SUFFIX,appspot.com,谷歌",
+    "DOMAIN-KEYWORD,google,谷歌",
+    "DOMAIN-KEYWORD,youtube,谷歌",
+
+    "DOMAIN-SUFFIX,telegram.org,TG",
+    "DOMAIN-SUFFIX,t.me,TG",
+    "DOMAIN-SUFFIX,tdesktop.com,TG",
+    "DOMAIN-SUFFIX,telegra.ph,TG",
+    "DOMAIN-SUFFIX,telesco.pe,TG",
+    "IP-CIDR,91.108.4.0/22,TG,no-resolve",
+    "IP-CIDR,91.108.8.0/22,TG,no-resolve",
+    "IP-CIDR,91.108.12.0/22,TG,no-resolve",
+    "IP-CIDR,91.108.16.0/22,TG,no-resolve",
+    "IP-CIDR,91.108.56.0/22,TG,no-resolve",
+    "IP-CIDR,149.154.160.0/20,TG,no-resolve",
+    "IP-CIDR6,2001:67c:4e8::/48,TG,no-resolve",
+    "IP-CIDR6,2001:b28:f23d::/48,TG,no-resolve",
+    "IP-CIDR6,2001:b28:f23f::/48,TG,no-resolve",
+
+    "DOMAIN-SUFFIX,microsoft.com,微软",
+    "DOMAIN-SUFFIX,microsoftonline.com,微软",
+    "DOMAIN-SUFFIX,live.com,微软",
+    "DOMAIN-SUFFIX,office.com,微软",
+    "DOMAIN-SUFFIX,office365.com,微软",
+    "DOMAIN-SUFFIX,outlook.com,微软",
+    "DOMAIN-SUFFIX,onedrive.com,微软",
+    "DOMAIN-SUFFIX,sharepoint.com,微软",
+    "DOMAIN-SUFFIX,windows.com,微软",
+    "DOMAIN-SUFFIX,windows.net,微软",
+    "DOMAIN-SUFFIX,msftconnecttest.com,微软",
+    "DOMAIN-SUFFIX,msftncsi.com,微软",
+    "DOMAIN-SUFFIX,bing.com,微软",
+    "DOMAIN-SUFFIX,xboxlive.com,微软",
+    "DOMAIN-KEYWORD,microsoft,微软",
+
+    "GEOSITE,CN,国内",
+    "GEOIP,CN,国内",
+    "GEOSITE,geolocation-!cn,海外",
+
+    "MATCH,兜底",
+  ];
+
+  return config;
+}
