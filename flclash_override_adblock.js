@@ -120,6 +120,20 @@ function main(config) {
       path: "./ruleset/anti-ad-clash.yaml",
       interval: 86400,
     },
+    directRules: {
+      type: "http",
+      behavior: "classical",
+      url: "https://gitee.com/wsq0102/config/raw/master/direct.yaml",
+      path: "./ruleset/direct.yaml",
+      interval: 86400,
+    },
+    proxyRules: {
+      type: "http",
+      behavior: "classical",
+      url: "https://gitee.com/wsq0102/config/raw/master/proxy.yaml",
+      path: "./ruleset/proxy.yaml",
+      interval: 86400,
+    },
   };
 
   config.rules = [
@@ -283,6 +297,8 @@ function main(config) {
     "DOMAIN-SUFFIX,xboxlive.com,微软",
     "DOMAIN-KEYWORD,microsoft,微软",
 
+    "RULE-SET,directRules,国内",
+    "RULE-SET,proxyRules,海外",
     "GEOSITE,CN,国内",
     "GEOIP,CN,国内",
     "GEOSITE,geolocation-!cn,海外",
