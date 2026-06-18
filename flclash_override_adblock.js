@@ -136,6 +136,24 @@ function main(config) {
     },
   };
 
+  config.dns = {
+    enable: true,
+    listen: "0.0.0.0:53",
+    ipv6: false,
+    "enhanced-mode": "fake-ip",
+    nameserver: ["223.5.5.5", "114.114.114.114", "119.28.28.28"],
+    fallback: ["223.6.6.6", "114.114.115.115"],
+    "fake-ip-filter": [
+      "*.lan",
+      "*.local",
+      "localhost",
+      "time.*",
+      "time.*.com",
+      "ntp.*",
+      "ntp.*.com",
+    ],
+  };
+
   config.rules = [
     "RULE-SET,antiAd,广告",
     "GEOSITE,category-ads-all,广告",
