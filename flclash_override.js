@@ -14,14 +14,16 @@ function main(config) {
         .filter((name) => name && !["DIRECT", "REJECT", "直连", "拒绝"].includes(name))
     : [];
   const autoNodePattern = /新加坡|狮城|坡|sg|singapore|日本|东京|大阪|jp|japan/i;
-  const autoNodeChoices = allNodes.filter((name) => autoNodePattern.test(name));
-
   const dedupe = (items) => [...new Set(items.filter(Boolean))];
   const allNodeChoices = allNodes.length > 0 ? allNodes : ["直连"];
   const aiExcludedNodePattern = /香港|hk|hong kong/i;
   const aiNodeChoices = allNodes.filter((name) => !aiExcludedNodePattern.test(name));
   const lowMultiplierNodePattern = /(?:^|[^0-9])0\.\d+(?:x|倍)?(?:$|[^0-9])/i;
   const lowMultiplierNodeChoices = allNodes.filter((name) => lowMultiplierNodePattern.test(name));
+  const autoNodeChoices = allNodes.filter(
+    (name) => autoNodePattern.test(name) && !lowMultiplierNodePattern.test(name),
+  );
+  const fallbackAutoNodeChoices = allNodes.filter((name) => autoNodePattern.test(name));
   const lowMultiplierChoices = lowMultiplierNodeChoices.length > 0 ? lowMultiplierNodeChoices : allNodeChoices;
   const baseProxyChoices = ["直连", "拒绝", ...allNodeChoices];
   const manualChoices = dedupe(["自动", "低倍", ...baseProxyChoices]);
@@ -34,7 +36,6 @@ function main(config) {
     ...(aiNodeChoices.length > 0 ? aiNodeChoices : allNodeChoices),
   ]);
   const directFirstChoices = dedupe(["直连", "自动", "低倍", ...baseProxyChoices]);
-  const rejectFirstChoices = dedupe(["拒绝", "直连", "自动", "低倍", ...baseProxyChoices]);
 
   config.proxies = [
     ...filteredProxies.filter((proxy) => !["直连", "拒绝"].includes(proxy.name)),
@@ -49,7 +50,12 @@ function main(config) {
       url: "http://www.gstatic.com/generate_204",
       interval: 300,
       tolerance: 50,
-      proxies: autoNodeChoices.length > 0 ? autoNodeChoices : allNodeChoices,
+      proxies:
+        autoNodeChoices.length > 0
+          ? autoNodeChoices
+          : fallbackAutoNodeChoices.length > 0
+            ? fallbackAutoNodeChoices
+            : allNodeChoices,
     },
     {
       name: "低倍",
@@ -63,11 +69,6 @@ function main(config) {
       name: "手动",
       type: "select",
       proxies: manualChoices,
-    },
-    {
-      name: "广告",
-      type: "select",
-      proxies: rejectFirstChoices,
     },
     {
       name: "AI",
@@ -113,13 +114,6 @@ function main(config) {
 
   config["rule-providers"] = {
     ...(config["rule-providers"] || {}),
-    antiAd: {
-      type: "http",
-      behavior: "domain",
-      url: "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
-      path: "./ruleset/anti-ad-clash.yaml",
-      interval: 86400,
-    },
     directRules: {
       type: "http",
       behavior: "classical",
@@ -155,28 +149,6 @@ function main(config) {
   };
 
   config.rules = [
-    "RULE-SET,antiAd,广告",
-    "GEOSITE,category-ads-all,广告",
-    "DOMAIN-SUFFIX,doubleclick.net,广告",
-    "DOMAIN-SUFFIX,googleadservices.com,广告",
-    "DOMAIN-SUFFIX,googlesyndication.com,广告",
-    "DOMAIN-SUFFIX,google-analytics.com,广告",
-    "DOMAIN-SUFFIX,adservice.google.com,广告",
-    "DOMAIN-SUFFIX,ads-twitter.com,广告",
-    "DOMAIN-SUFFIX,facebook.net,广告",
-    "DOMAIN-SUFFIX,scorecardresearch.com,广告",
-    "DOMAIN-SUFFIX,zedo.com,广告",
-    "DOMAIN-SUFFIX,adsrvr.org,广告",
-    "DOMAIN-SUFFIX,taboola.com,广告",
-    "DOMAIN-SUFFIX,outbrain.com,广告",
-    "DOMAIN-SUFFIX,criteo.com,广告",
-    "DOMAIN-SUFFIX,adnxs.com,广告",
-    "DOMAIN-SUFFIX,adsystem.com,广告",
-    "DOMAIN-SUFFIX,umeng.com,广告",
-    "DOMAIN-SUFFIX,umengcloud.com,广告",
-    "DOMAIN-KEYWORD,adservice,广告",
-    "DOMAIN-KEYWORD,adsystem,广告",
-
     "DOMAIN-SUFFIX,openai.com,AI",
     "DOMAIN-SUFFIX,chatgpt.com,AI",
     "DOMAIN-SUFFIX,oaistatic.com,AI",
@@ -313,6 +285,17 @@ function main(config) {
     "DOMAIN-SUFFIX,xboxlive.com,微软",
     "DOMAIN-KEYWORD,microsoft,微软",
 
+    "DOMAIN,localhost,国内",
+    "DOMAIN-SUFFIX,local,国内",
+    "IP-CIDR,127.0.0.0/8,国内,no-resolve",
+    "IP-CIDR,10.0.0.0/8,国内,no-resolve",
+    "IP-CIDR,172.16.0.0/12,国内,no-resolve",
+    "IP-CIDR,192.168.0.0/16,国内,no-resolve",
+    "IP-CIDR,100.64.0.0/10,国内,no-resolve",
+    "IP-CIDR,169.254.0.0/16,国内,no-resolve",
+    "IP-CIDR6,::1/128,国内,no-resolve",
+    "IP-CIDR6,fc00::/7,国内,no-resolve",
+    "IP-CIDR6,fe80::/10,国内,no-resolve",
     "RULE-SET,directRules,国内",
     "RULE-SET,proxyRules,海外",
     "GEOSITE,CN,国内",
