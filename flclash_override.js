@@ -117,14 +117,14 @@ function main(config) {
     directRules: {
       type: "http",
       behavior: "classical",
-      url: "https://gitee.com/wsq0102/config/raw/master/direct.yaml",
+      url: "https://raw.githubusercontent.com/wsq0102/config/master/direct.yaml",
       path: "./ruleset/direct.yaml",
       interval: 86400,
     },
     proxyRules: {
       type: "http",
       behavior: "classical",
-      url: "https://gitee.com/wsq0102/config/raw/master/proxy.yaml",
+      url: "https://raw.githubusercontent.com/wsq0102/config/master/proxy.yaml",
       path: "./ruleset/proxy.yaml",
       interval: 86400,
     },
