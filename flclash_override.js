@@ -106,7 +106,7 @@ function main(config) {
       proxies: proxyFirstChoices,
     },
     {
-      name: "兜底",
+      name: "漏网之鱼",
       type: "select",
       proxies: directFirstChoices,
     },
@@ -302,7 +302,7 @@ function main(config) {
     "GEOIP,CN,国内",
     "GEOSITE,geolocation-!cn,海外",
 
-    "MATCH,兜底",
+    "MATCH,漏网之鱼",
   ];
 
   return config;
