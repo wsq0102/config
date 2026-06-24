@@ -13,29 +13,27 @@ function main(config) {
         .map((proxy) => proxy.name)
         .filter((name) => name && !["DIRECT", "REJECT", "直连", "拒绝"].includes(name))
     : [];
-  const autoNodePattern = /新加坡|狮城|坡|sg|singapore|日本|东京|大阪|jp|japan/i;
   const dedupe = (items) => [...new Set(items.filter(Boolean))];
   const allNodeChoices = allNodes.length > 0 ? allNodes : ["直连"];
   const aiExcludedNodePattern = /香港|hk|hong kong/i;
   const aiNodeChoices = allNodes.filter((name) => !aiExcludedNodePattern.test(name));
   const lowMultiplierNodePattern = /(?:^|[^0-9])0\.\d+(?:x|倍)?(?:$|[^0-9])/i;
   const lowMultiplierNodeChoices = allNodes.filter((name) => lowMultiplierNodePattern.test(name));
-  const autoNodeChoices = allNodes.filter(
-    (name) => autoNodePattern.test(name) && !lowMultiplierNodePattern.test(name),
-  );
-  const fallbackAutoNodeChoices = allNodes.filter((name) => autoNodePattern.test(name));
+  const autoNodeChoices = allNodes.filter((name) => !lowMultiplierNodePattern.test(name));
+  const fallbackAutoNodeChoices = allNodeChoices;
   const lowMultiplierChoices = lowMultiplierNodeChoices.length > 0 ? lowMultiplierNodeChoices : allNodeChoices;
   const baseProxyChoices = ["直连", "拒绝", ...allNodeChoices];
-  const manualChoices = dedupe(["自动", "低倍", ...baseProxyChoices]);
-  const proxyFirstChoices = dedupe(["手动", "自动", "低倍", ...baseProxyChoices]);
+  const manualChoices = dedupe(["低倍", "自动", ...baseProxyChoices]);
+  const proxyFirstChoices = dedupe(["手动", "低倍", "自动", ...baseProxyChoices]);
   const aiProxyChoices = dedupe([
     "手动",
-    "自动",
     "低倍",
+    "自动",
     ...baseProxyChoices.slice(0, 2),
     ...(aiNodeChoices.length > 0 ? aiNodeChoices : allNodeChoices),
   ]);
-  const directFirstChoices = dedupe(["直连", "自动", "低倍", ...baseProxyChoices]);
+  const directFirstChoices = dedupe(["直连", "低倍", "自动", ...baseProxyChoices]);
+  const fallbackChoices = dedupe(["直连", "手动", "低倍", "自动", ...baseProxyChoices]);
 
   config.proxies = [
     ...filteredProxies.filter((proxy) => !["直连", "拒绝"].includes(proxy.name)),
@@ -108,7 +106,7 @@ function main(config) {
     {
       name: "漏网之鱼",
       type: "select",
-      proxies: directFirstChoices,
+      proxies: fallbackChoices,
     },
   ];
 
