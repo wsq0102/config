@@ -157,10 +157,13 @@ function main(config) {
     "DOMAIN-SUFFIX,perplexity.ai,AI",
     "DOMAIN-SUFFIX,poe.com,AI",
     "DOMAIN-SUFFIX,gemini.google.com,AI",
+    "DOMAIN-SUFFIX,x.ai,AI",
+    "DOMAIN-SUFFIX,grok.com,AI",
     "DOMAIN-KEYWORD,openai,AI",
     "DOMAIN-KEYWORD,chatgpt,AI",
     "DOMAIN-KEYWORD,claude,AI",
     "DOMAIN-KEYWORD,perplexity,AI",
+    "DOMAIN-KEYWORD,grok,AI",
 
     "DOMAIN-SUFFIX,netflix.com,流媒",
     "DOMAIN-SUFFIX,nflxvideo.net,流媒",
