@@ -1,4 +1,5 @@
 function main(config) {
+  config.mode = "rule";
   const excludedNodeNamePattern = /剩余|流量|套餐|到期|更新|订阅|群组|重置|官网/;
   const filteredProxies = Array.isArray(config.proxies)
     ? config.proxies.filter(
