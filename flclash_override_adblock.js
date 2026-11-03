@@ -122,17 +122,28 @@ function main(config) {
     antiAdRules: {
       type: "http",
       behavior: "classical",
+      format: "yaml",
       url: "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
       path: "./ruleset/anti-ad-clash.yaml",
       interval: 86400,
       proxy: "自动",
     },
-    // Loyalsoldier 广告域名列表，作为另一份独立的域名规则兜底。
-    adDomainRules: {
+    // Blackmatrix7 的移动端综合广告规则（经典规则 + 域名规则）。
+    blackmatrixAdvertisingRules: {
+      type: "http",
+      behavior: "classical",
+      format: "yaml",
+      url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising.yaml",
+      path: "./ruleset/blackmatrix7-advertising.yaml",
+      interval: 86400,
+      proxy: "自动",
+    },
+    blackmatrixAdvertisingDomainRules: {
       type: "http",
       behavior: "domain",
-      url: "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
-      path: "./ruleset/reject.txt",
+      format: "yaml",
+      url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising_Domain.yaml",
+      path: "./ruleset/blackmatrix7-advertising-domain.yaml",
       interval: 86400,
       proxy: "自动",
     },
@@ -180,7 +191,8 @@ function main(config) {
     // 去广告规则必须放在业务分流规则之前，避免广告请求被送入代理。
     "GEOSITE,category-ads-all,广告",
     "RULE-SET,antiAdRules,广告",
-    "RULE-SET,adDomainRules,广告",
+    "RULE-SET,blackmatrixAdvertisingRules,广告",
+    "RULE-SET,blackmatrixAdvertisingDomainRules,广告",
     // 远程规则不可用时的内置兜底规则。
     "DOMAIN-SUFFIX,doubleclick.net,广告",
     "DOMAIN-SUFFIX,googlesyndication.com,广告",
