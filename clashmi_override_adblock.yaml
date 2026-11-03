@@ -4,6 +4,15 @@
 mode: rule
 
 proxy-groups:
+  # Define hidden compatibility wrappers first so every selector can resolve them.
+  - name: "直连代理"
+    type: select
+    proxies: [DIRECT]
+    hidden: true
+  - name: "拒绝代理"
+    type: select
+    proxies: [REJECT]
+    hidden: true
   - name: "自动"
     type: url-test
     include-all: true
@@ -23,50 +32,50 @@ proxy-groups:
     empty-fallback: DIRECT
   - name: "手动"
     type: select
-    proxies: ["低倍", "自动", DIRECT, REJECT]
+    proxies: ["低倍", "自动", "直连代理", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "广告"
     type: select
-    proxies: [REJECT, DIRECT]
+    proxies: ["拒绝代理", "直连代理"]
   - name: "AI"
     type: select
-    proxies: ["手动", "低倍", "自动", DIRECT, REJECT]
+    proxies: ["手动", "低倍", "自动", "直连代理", "拒绝代理"]
     include-all: true
     exclude-filter: '(?i)香港|hk|hong kong|剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "流媒"
     type: select
-    proxies: ["手动", "低倍", "自动", DIRECT, REJECT]
+    proxies: ["手动", "低倍", "自动", "直连代理", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "谷歌"
     type: select
-    proxies: ["手动", "低倍", "自动", DIRECT, REJECT]
+    proxies: ["手动", "低倍", "自动", "直连代理", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "TG"
     type: select
-    proxies: ["手动", "低倍", "自动", DIRECT, REJECT]
+    proxies: ["手动", "低倍", "自动", "直连代理", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "微软"
     type: select
-    proxies: [DIRECT, "低倍", "自动", REJECT]
+    proxies: ["直连代理", "低倍", "自动", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "国内"
     type: select
-    proxies: [DIRECT, "低倍", "自动", REJECT]
+    proxies: ["直连代理", "低倍", "自动", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "海外"
     type: select
-    proxies: ["手动", "低倍", "自动", DIRECT, REJECT]
+    proxies: ["手动", "低倍", "自动", "直连代理", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "漏网之鱼"
     type: select
-    proxies: [DIRECT, "手动", "低倍", "自动", REJECT]
+    proxies: ["直连代理", "手动", "低倍", "自动", "拒绝代理"]
     include-all: true
     exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
 rule-providers:
