@@ -69,6 +69,12 @@ function main(config) {
       proxies: manualChoices,
     },
     {
+      name: "广告",
+      type: "select",
+      // 默认拒绝；切换为直连可临时排查误杀或兼容性问题。
+      proxies: ["拒绝", "直连"],
+    },
+    {
       name: "AI",
       type: "select",
       proxies: aiProxyChoices,
@@ -112,12 +118,31 @@ function main(config) {
 
   config["rule-providers"] = {
     ...(config["rule-providers"] || {}),
+    // Anti-AD：覆盖广告、跟踪和常见推广域名。
+    antiAdRules: {
+      type: "http",
+      behavior: "classical",
+      url: "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
+      path: "./ruleset/anti-ad-clash.yaml",
+      interval: 86400,
+      proxy: "自动",
+    },
+    // Loyalsoldier 广告域名列表，作为另一份独立的域名规则兜底。
+    adDomainRules: {
+      type: "http",
+      behavior: "domain",
+      url: "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
+      path: "./ruleset/reject.txt",
+      interval: 86400,
+      proxy: "自动",
+    },
     directRules: {
       type: "http",
       behavior: "classical",
       url: "https://raw.githubusercontent.com/wsq0102/config/master/direct.yaml",
       path: "./ruleset/direct.yaml",
       interval: 86400,
+      proxy: "自动",
     },
     proxyRules: {
       type: "http",
@@ -125,6 +150,7 @@ function main(config) {
       url: "https://raw.githubusercontent.com/wsq0102/config/master/proxy.yaml",
       path: "./ruleset/proxy.yaml",
       interval: 86400,
+      proxy: "自动",
     },
   };
 
@@ -133,6 +159,10 @@ function main(config) {
     listen: "0.0.0.0:53",
     ipv6: false,
     "enhanced-mode": "fake-ip",
+    // 让 DNS 查询也遵循下面的分流规则，广告域名可在解析阶段尽早被拒绝。
+    "respect-rules": true,
+    // 代理节点自身的域名不走分流规则，避免 fake-ip / 规则解析形成循环。
+    "proxy-server-nameserver": ["223.5.5.5", "114.114.114.114"],
     nameserver: ["223.5.5.5", "114.114.114.114", "119.28.28.28"],
     fallback: ["223.6.6.6", "114.114.115.115"],
     "fake-ip-filter": [
@@ -147,6 +177,35 @@ function main(config) {
   };
 
   config.rules = [
+    // 去广告规则必须放在业务分流规则之前，避免广告请求被送入代理。
+    "GEOSITE,category-ads-all,广告",
+    "RULE-SET,antiAdRules,广告",
+    "RULE-SET,adDomainRules,广告",
+    // 远程规则不可用时的内置兜底规则。
+    "DOMAIN-SUFFIX,doubleclick.net,广告",
+    "DOMAIN-SUFFIX,googlesyndication.com,广告",
+    "DOMAIN-SUFFIX,googleadservices.com,广告",
+    "DOMAIN-SUFFIX,adnxs.com,广告",
+    "DOMAIN-SUFFIX,adsrvr.org,广告",
+    "DOMAIN-SUFFIX,adform.net,广告",
+    "DOMAIN-SUFFIX,scorecardresearch.com,广告",
+    "DOMAIN-SUFFIX,app-measurement.com,广告",
+    "DOMAIN-SUFFIX,umeng.com,广告",
+    "DOMAIN-SUFFIX,umengcloud.com,广告",
+    "DOMAIN-SUFFIX,cnzz.com,广告",
+    "DOMAIN-SUFFIX,adsame.com,广告",
+    "DOMAIN-SUFFIX,tanx.com,广告",
+    "DOMAIN-SUFFIX,amazon-adsystem.com,广告",
+    "DOMAIN-SUFFIX,advertising.com,广告",
+    "DOMAIN-SUFFIX,criteo.com,广告",
+    "DOMAIN-SUFFIX,criteo.net,广告",
+    "DOMAIN-SUFFIX,taboola.com,广告",
+    "DOMAIN-SUFFIX,outbrain.com,广告",
+    "DOMAIN-SUFFIX,adcolony.com,广告",
+    "DOMAIN-SUFFIX,vungle.com,广告",
+    "DOMAIN-SUFFIX,ironsource.com,广告",
+    "DOMAIN-SUFFIX,unityads.unity3d.com,广告",
+
     "DOMAIN-SUFFIX,openai.com,AI",
     "DOMAIN-SUFFIX,chatgpt.com,AI",
     "DOMAIN-SUFFIX,oaistatic.com,AI",
