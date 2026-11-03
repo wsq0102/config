@@ -1,33 +1,20 @@
-# Clash Mi / Mihomo full-profile template.
-# Replace the URL below with a Clash/Mihomo YAML subscription URL before importing.
-# Unlike FlClash, this file is native YAML and uses Mihomo proxy-provider filters.
-
-proxy-providers:
-  subscription:
-    type: http
-    url: "PASTE_YOUR_CLASH_MI_COMPATIBLE_SUBSCRIPTION_URL_HERE"
-    path: ./proxy-providers/subscription.yaml
-    interval: 3600
-    proxy: DIRECT
-    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
-    health-check:
-      enable: true
-      interval: 600
-      url: http://www.gstatic.com/generate_204
+# Clash Mi custom override. Attach this to an existing subscription in its
+# Custom Override settings; this file intentionally inherits that profile's nodes.
 
 proxy-groups:
   - name: "自动"
     type: url-test
-    use: [subscription]
-    exclude-filter: '(^|[^0-9])0\.[0-9]+(x|倍)?($|[^0-9])'
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$|(^|[^0-9])0\.[0-9]+(x|倍)?($|[^0-9])'
     url: http://www.gstatic.com/generate_204
     interval: 300
     tolerance: 50
     empty-fallback: DIRECT
   - name: "低倍"
     type: url-test
-    use: [subscription]
+    include-all: true
     filter: '(^|[^0-9])0\.[0-9]+(x|倍)?($|[^0-9])'
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
     url: http://www.gstatic.com/generate_204
     interval: 300
     tolerance: 50
@@ -35,43 +22,51 @@ proxy-groups:
   - name: "手动"
     type: select
     proxies: ["低倍", "自动", "直连", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "广告"
     type: select
     proxies: ["拒绝", "直连"]
   - name: "AI"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    use: [subscription]
-    exclude-filter: '(?i)香港|hk|hong kong'
+    include-all: true
+    exclude-filter: '(?i)香港|hk|hong kong|剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "流媒"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "谷歌"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "TG"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "微软"
     type: select
     proxies: ["直连", "低倍", "自动", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "国内"
     type: select
     proxies: ["直连", "低倍", "自动", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "海外"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "漏网之鱼"
     type: select
     proxies: ["直连", "手动", "低倍", "自动", "拒绝"]
-    use: [subscription]
+    include-all: true
+    exclude-filter: '剩余|流量|套餐|到期|更新|订阅|群组|重置|官网|^(直连|拒绝|DIRECT|REJECT)$'
   - name: "直连"
     type: select
     proxies: [DIRECT]
