@@ -18,7 +18,7 @@ proxy-providers:
 proxy-groups:
   - name: "自动"
     type: url-test
-    include-all: true
+    use: [subscription]
     exclude-filter: '(^|[^0-9])0\.[0-9]+(x|倍)?($|[^0-9])'
     url: http://www.gstatic.com/generate_204
     interval: 300
@@ -26,7 +26,7 @@ proxy-groups:
     empty-fallback: "全部节点"
   - name: "低倍"
     type: url-test
-    include-all: true
+    use: [subscription]
     filter: '(^|[^0-9])0\.[0-9]+(x|倍)?($|[^0-9])'
     url: http://www.gstatic.com/generate_204
     interval: 300
@@ -35,46 +35,46 @@ proxy-groups:
   - name: "手动"
     type: select
     proxies: ["低倍", "自动", "直连", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "广告"
     type: select
     proxies: ["拒绝", "直连"]
   - name: "AI"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    include-all: true
+    use: [subscription]
     exclude-filter: '(?i)香港|hk|hong kong'
   - name: "流媒"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "谷歌"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "TG"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "微软"
     type: select
     proxies: ["直连", "低倍", "自动", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "国内"
     type: select
     proxies: ["直连", "低倍", "自动", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "海外"
     type: select
     proxies: ["手动", "低倍", "自动", "直连", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "漏网之鱼"
     type: select
     proxies: ["直连", "手动", "低倍", "自动", "拒绝"]
-    include-all: true
+    use: [subscription]
   - name: "全部节点"
     type: url-test
-    include-all: true
+    use: [subscription]
     url: http://www.gstatic.com/generate_204
     interval: 300
     tolerance: 50
